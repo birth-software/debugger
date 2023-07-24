@@ -1,0 +1,11 @@
+
+.{
+    .name = "birth",
+    .version = "0.1.0",
+    .dependencies = .{
+        .raylib = .{
+            .url = "https://github.com/raysan5/raylib/archive/32b54be5cbd9eb77fc36a4c044dce69c5640a26a.tar.gz",
+            .hash = "1220cc3f763ed7c2fc52d9b2446c893b6f0e01702130867dcac82ed52116556feeb1",
+        },
+    },
+}
