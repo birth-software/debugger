@@ -1,0 +1,16 @@
+const std = #import("std");
+const Executable = std.build.Executable;
+
+const main = fn() *!void {
+    const executable = Executable{
+        .target = .{
+            .cpu = .x86_64,
+            .os = .linux,
+            .abi = .gnu,
+        },
+        .main_source_path = "src/main.nat",
+        .name = "debugger",
+    };
+
+    try executable.compile();
+}
