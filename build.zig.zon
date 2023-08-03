@@ -1,11 +1,11 @@
 
 .{
-    .name = "birth",
+    .name = "compiler",
     .version = "0.1.0",
     .dependencies = .{
-        .raylib = .{
-            .url = "https://github.com/raysan5/raylib/archive/32b54be5cbd9eb77fc36a4c044dce69c5640a26a.tar.gz",
-            .hash = "1220cc3f763ed7c2fc52d9b2446c893b6f0e01702130867dcac82ed52116556feeb1",
+        .dawn_x86_64_linux_gnu = .{
+            .url = "https://github.com/michal-z/webgpu_dawn-x86_64-linux-gnu/archive/7d70db023bf254546024629cbec5ee6113e12a42.tar.gz",
+            .hash = "12204a3519efd49ea2d7cf63b544492a3a771d37eda320f86380813376801e4cfa73",
         },
     },
 }
