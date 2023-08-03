@@ -1,9 +1,16 @@
 const std = @import("std");
+const assert = std.debug.assert;
+const zgui = @import("libs/zig-gamedev/libs/zgui/build.zig");
+
+// Needed for glfw/wgpu rendering backend
+const zglfw = @import("libs/zig-gamedev/libs/zglfw/build.zig");
+const zgpu = @import("libs/zig-gamedev/libs/zgpu/build.zig");
+const zpool = @import("libs/zig-gamedev/libs/zpool/build.zig");
 
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.Build) !void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
@@ -29,22 +36,59 @@ pub fn build(b: *std.Build) void {
     // step when running `zig build`).
     b.installArtifact(exe);
 
-    const raylib_dependency = b.dependency("raylib", .{
-        // .raygui = true,
-        // .platform_drm = true,
-        .target = target,
-        .optimize = optimize,
+    const zgui_pkg = zgui.package(b, target, optimize, .{
+        .options = .{ .backend = .glfw_wgpu },
     });
 
-    const raylib_library = raylib_dependency.artifact("raylib");
-    // const raylib_module = raylib_dependency.module("raylib");
-    // exe.addModule("raylib", raylib_module);
-    exe.linkLibrary(raylib_library);
+    zgui_pkg.link(exe);
+
+    // Needed for glfw/wgpu rendering backend
+    const zglfw_pkg = zglfw.package(b, target, optimize, .{});
+    const zpool_pkg = zpool.package(b, target, optimize, .{});
+    const zgpu_pkg = zgpu.package(b, target, optimize, .{
+        .deps = .{ .zpool = zpool_pkg.zpool, .zglfw = zglfw_pkg.zglfw },
+    });
+
+    zglfw_pkg.link(exe);
+    zgpu_pkg.link(exe);
+
+    const test_directory_name = "test";
+    const test_directory = try std.fs.cwd().openIterableDir(test_directory_name, .{});
+    var test_directory_iterator = test_directory.iterate();
+    var c_source_file_count: usize = 0;
+    var c_executables = std.ArrayList(*std.Build.CompileStep).init(b.allocator);
+    while (try test_directory_iterator.next()) |entry| {
+        switch (entry.kind) {
+            .file => {
+                const file_name = entry.name;
+
+                if (file_name.len >= 2 and file_name[file_name.len - 2] == '.' and file_name[file_name.len - 1] == 'c') {
+                    defer c_source_file_count += 1;
+
+                    const executable = b.addExecutable(.{
+                        .name = file_name[0 .. file_name.len - 2],
+                        .target = target,
+                        .optimize = optimize,
+                    });
+
+                    const c_source_file_relative_path = try std.mem.concat(b.allocator, u8, &.{ test_directory_name ++ "/", file_name });
+                    const c_flags = &.{"-g"};
+                    executable.addCSourceFile(.{ .file = std.Build.LazyPath.relative(c_source_file_relative_path), .flags = c_flags });
+                    executable.linkLibC();
+
+                    try c_executables.append(executable);
+                }
+            },
+            else => {},
+        }
+    }
 
     // This *creates* a Run step in the build graph, to be executed when another
     // step is evaluated that depends on it. The next line below will establish
     // such a dependency.
     const run_cmd = b.addRunArtifact(exe);
+
+    run_cmd.addArtifactArg(c_executables.items[0]);
 
     // By making the run step depend on the install step, it will be run from the
     // installation directory rather than directly from within the cache directory.
