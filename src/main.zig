@@ -84,9 +84,9 @@ pub fn main() !void {
         std.process.argsFree(allocator, debugger_arguments);
         _ = gpa.deinit();
     } else {
-        const arguments = [_:null]?[*:0]const u8{executable};
+        const arguments = &[_:null]?[*:0]const u8{executable};
         try Ptrace(.traceme).request();
-        switch (std.os.execveZ(arguments[0].?, &arguments, std.c.environ)) {
+        switch (std.os.execveZ(arguments[0].?, arguments, std.c.environ)) {
             else => |err| log.err("Error happened: {}", .{err}),
         }
     }
