@@ -6,4 +6,4 @@
 *.h text
 
 # Text files to always have LF (unix) line endings on checkout.
-*.zig text eol=lf
+*.nat text eol=lf
