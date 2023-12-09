@@ -1,6 +1,12 @@
 const std = #import("std");
+const assert = std.assert;
 const Executable = std.build.Executable;
-const main = fn() s32 {
+
+const main = fn () s32 {
+    const argument_count = std.start.argument_count;
+    const argument_values = std.start.argument_values;
+    assert(ok = argument_count == 3);
+
     const executable = Executable{
         .target = .{
             .cpu = .x86_64,
@@ -10,6 +16,12 @@ const main = fn() s32 {
         .main_source_path = "src/main.nat",
     };
 
-    std.print(bytes = "Hello from the builder\n");
-    return 0;
+    const compiler_path = argument_values[2];
+
+    if (executable.compile(compiler_path)) {
+        return 0;
+    } else {
+        std.print(bytes = "Executable failed to compile!\n");
+        return 1;
+    }
 }
