@@ -6,10 +6,30 @@ const glfwTerminate = fn() void extern("glfw");
 const glfw_true = 1;
 const glfw_false = 0;
 
+const GLFWwindow = usize;
+const GLFWmonitor = usize;
+const glfwCreateWindow = fn (width: s32, height: s32, title: [&:0]const u8, monitor: ?&GLFWmonitor, share: ?&GLFWwindow) ?&GLFWwindow extern("glfw");
+const glfwDestroyWindow = fn (window: &GLFWwindow) void extern("glfw");
+const glfwWindowShouldClose = fn (window: &GLFWwindow) s32 extern("glfw");
+const glfwPollEvents = fn () void extern("glfw");
+
 const main = fn () s32 {
     if (glfwInit() == glfw_true) {
-        glfwTerminate();
-        return 0;
+        const width = 640;
+        const height = 480;
+        const title = "Hello GLFW!";
+
+        if (glfwCreateWindow(width, height, title, monitor = null, share = null)) |window| {
+            while (glfwWindowShouldClose(window) == glfw_false) {
+                glfwPollEvents();
+            }
+            glfwDestroyWindow(window);
+            glfwTerminate();
+            return 0;
+        } else {
+            glfwTerminate();
+            return 1;
+        }
     } else {
         return 1;
     }
