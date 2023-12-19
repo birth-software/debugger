@@ -1,5 +1,16 @@
 const std = #import("std");
 
+const glfwInit = fn () s32 extern("glfw");
+const glfwTerminate = fn() void extern("glfw");
+
+const glfw_true = 1;
+const glfw_false = 0;
+
 const main = fn () s32 {
-    return 0;
+    if (glfwInit() == glfw_true) {
+        glfwTerminate();
+        return 0;
+    } else {
+        return 1;
+    }
 }

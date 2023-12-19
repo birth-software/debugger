@@ -3,10 +3,6 @@ const assert = std.assert;
 const Executable = std.build.Executable;
 
 const main = fn () s32 {
-    const argument_count = std.start.argument_count;
-    const argument_values = std.start.argument_values;
-    assert(ok = argument_count == 3);
-
     const executable = Executable{
         .target = .{
             .cpu = .x86_64,
@@ -14,11 +10,10 @@ const main = fn () s32 {
             .abi = .gnu,
         },
         .main_source_path = "src/main.nat",
+        .link_libc = true,
     };
 
-    const compiler_path = argument_values[2];
-
-    if (executable.compile(compiler_path)) {
+    if (executable.compile()) {
         return 0;
     } else {
         std.print(bytes = "Executable failed to compile!\n");
